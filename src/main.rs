@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     rl.set_helper(Some(helper));
 
     if rl.load_history(HISTORY_FILENAME).is_err() {
-        cx::io::print_error("No previous history. Creating a new one...");
+        cx::io::print_warn("No previous history. Creating a new one...");
         std::fs::File::create(HISTORY_FILENAME)?;
     }
 
