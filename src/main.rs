@@ -1,56 +1,52 @@
+use std::{error, fs};
+
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
 mod cx;
+use crate::cx::{io, repl};
 
-use crate::cx::io;
-use crate::cx::repl;
+const HISTORY_FILE: &str = ".cone_history";
 
-const HISTORY_FILENAME: &str = ".cone_history";
+/// Run the main application logic.
+fn run_app() -> Result<(), Box<dyn error::Error>> {
+    // supported commands for the REPL
+    let commands = [
+        "CLEAN", "COMPUTE", "EXIT", "HELP",
+        "LIST", "LOAD", "PREVIEW", "PROCESS",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect::<Vec<String>>();
 
-fn main() -> Result<(), Box<dyn std::error::Error>>{
-    let commands: Vec<String> = vec![
-        "CLEAN".into(),
-        "COMPUTE".into(),
-        "EXIT".into(),
-        "HELP".into(),
-        "LIST".into(),
-        "LOAD".into(),
-        "PREVIEW".into(),
-        "PROCESS".into(),
-    ];
-
+    // initialize line editor with helper
     let helper = repl::ReadLineHelper::new(commands.clone());
-
     let mut rl = Editor::new()?;
     rl.set_helper(Some(helper));
 
-    if rl.load_history(HISTORY_FILENAME).is_err() {
-        cx::io::print_warn("No previous history. Creating a new one...");
-        std::fs::File::create(HISTORY_FILENAME)?;
+    // load or create history file if it doesn't exists
+    if rl.load_history(HISTORY_FILE).is_err() {
+        io::print_warn("No previous history. Creating a new one...");
+        fs::File::create(HISTORY_FILE)?;
     }
 
+    // main REPL loop
     loop {
-        let raw_input = rl.readline("CX ❯ ");
-
-        match raw_input {
-            Ok(raw_input) => {
-                let args: Vec<&str> = raw_input
-                    .split_whitespace()
-                    .collect();
-                
-                if args.is_empty() {
+        match rl.readline("CX ❯ ") {
+            Ok(input) => {
+                let entry = input.trim();
+                if entry.is_empty() {
                     continue
                 }
+                rl.add_history_entry(entry)?;
 
-                rl.add_history_entry(raw_input.trim())?;
-
+                let args: Vec<&str> = entry.split_whitespace().collect();
                 let cmd = args[0].to_ascii_uppercase();
 
                 if commands.contains(&cmd) {
-                     io::print_info(format!("You've entered the '{}' command.", cmd))
+                    io::print_info(format!("You've entered the '{}' command.", cmd));
                 } else {
-                    io::print_error(format!("Command '{}' does not exist.", cmd))
+                    io::print_error(format!("Command '{}' does not exist.", cmd));
                 }
             }
             Err(ReadlineError::Interrupted) => {
@@ -58,12 +54,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
                 break
             }
             Err(err) => {
-                io::print_error(format!("Something went wrong: {:?}.", err));
+                io::print_error(format!("Something went wrong ({}).", err));
                 break
             }
         }
     }
 
-    rl.save_history(HISTORY_FILENAME)?;
+    // save history on exit
+    rl.save_history(HISTORY_FILE)?;
     Ok(())
+}
+
+fn main() {
+    if let Err(err) = run_app() {
+        io::print_error(format!("Application error: {}", err));
+        std::process::exit(1);
+    }
 }
