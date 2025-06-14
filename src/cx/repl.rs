@@ -132,6 +132,16 @@ impl Highlighter for ReadLineHelper {
         Cow::Owned(format!("{}{}{}", leading, styled_token, trailing))
     }
 
+    fn highlight_prompt<'b, 's: 'b, 'p: 'b>(
+        &'s self,
+        prompt: &'p str,
+        _default: bool,
+    ) -> Cow<'b, str> {
+        // change to preference
+        let colored = prompt.with(Color::Blue).bold().to_string();
+        Cow::Owned(colored)
+    }
+
     fn highlight_candidate<'c>(
         &self,
         candidate: &'c str,
