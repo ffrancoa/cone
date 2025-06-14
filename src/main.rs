@@ -1,15 +1,21 @@
 use rustyline::DefaultEditor;
 
+mod cx;
+
+use crate::cx::io;
+
 fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut rl = DefaultEditor::new()?;
 
     loop {
-        let input = rl.readline("CX ❯ ");
+        let inputline = rl.readline("CX ❯ ");
 
-        match input {
-            Ok(_) => println!("Everything's good."),
+        match inputline {
+            Ok(_) => {
+                io::print_info("Everything's good.")
+            }
             Err(_) => {
-                println!("Oops... Something went wrong.");
+                io::print_error("Oops... Something went wrong.");
                 break
             }
         }
