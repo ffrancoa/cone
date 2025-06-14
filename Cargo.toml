@@ -1,6 +1,9 @@
 [package]
 name = "cone"
 version = "0.1.0"
+description = "CONE: CPTu Operations and Numerical Exploration."
+repository = "https://github.com/ffrancoa/cone"
+license = "MIT"
 edition = "2024"
 
 [dependencies]
