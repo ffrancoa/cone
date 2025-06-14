@@ -1,11 +1,25 @@
-use rustyline::DefaultEditor;
+use rustyline::Editor;
 
 mod cx;
 
 use crate::cx::io;
+use crate::cx::repl;
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{
-    let mut rl = DefaultEditor::new()?;
+    let commands: Vec<String> = vec![
+        "CLEAN".into(),
+        "COMPUTE".into(),
+        "EXIT".into(),
+        "HELP".into(),
+        "LIST".into(),
+        "LOAD".into(),
+        "PREVIEW".into(),
+        "PROCESS".into(),
+    ];
+    let helper = repl::ReadLineHelper::new(commands.clone());
+
+    let mut rl = Editor::new()?;
+    rl.set_helper(Some(helper));
 
     loop {
         let raw_input = rl.readline("CX ❯ ");
@@ -18,14 +32,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
                 if args.is_empty() {
                     continue
                 }
+                
                 let cmd = args[0].to_ascii_uppercase();
-                match cmd.as_str() {
-                    "LOAD" => {
-                        io::print_info("You've entered the LOAD command.")
-                    }
-                    _ => {
-                        io::print_error(format!("Command {} does not exist.", cmd))
-                    }
+
+                if commands.contains(&cmd) {
+                     io::print_info(format!("You've entered the {} command", cmd))
+                } else {
+                    io::print_error(format!("Command {} does not exist.", cmd))
                 }
             }
             Err(_) => {
