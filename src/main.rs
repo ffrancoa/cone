@@ -1,5 +1,6 @@
 use std::{error, fs};
 
+use clap::Command;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
@@ -66,8 +67,13 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 }
 
 fn main() {
+    let _ = Command::new(clap::crate_name!())
+        .version(clap::crate_version!()) // usa la versión del Cargo.toml automáticamente
+        .about("CONE: CPTu Operations and Numerical Exploration.") // descripción breve del programa
+        .get_matches();
+
     if let Err(err) = run_app() {
-        io::print_error(format!("Application error: {}", err));
+        io::print_error(format!("Application error: {}.", err));
         std::process::exit(1);
     }
 }
