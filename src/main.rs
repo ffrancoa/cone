@@ -43,7 +43,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
                 }
 
                 rl.add_history_entry(raw_input.trim())?;
-                println!("{}", raw_input.trim());
 
                 let cmd = args[0].to_ascii_uppercase();
 
