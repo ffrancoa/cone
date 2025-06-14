@@ -21,7 +21,11 @@ const HISTORY_FILE: &str = ".cone_history";
 fn build_cli() -> Command {
     Command::new(crate_name!())
         .version(crate_version!())
-        .about(crate_description!())
+        .about(format!(
+            "{}: {}",
+            crate_name!().to_ascii_uppercase(),
+            crate_description!()
+        ))
 }
 
 /// Run the main application logic.
