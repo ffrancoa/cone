@@ -1,11 +1,11 @@
 use std::fmt::Display;
 
+use crossterm::style::Stylize;
+
 pub fn print_info(msg: impl Display) {
-    let info_msg = format!("[info]: {}", msg);
-    println!("{}", info_msg)
+    println!("{} {}", "[Info]:".bold().green(), msg)
 }
 
 pub fn print_error(msg: impl Display) {
-    let error_msg = format!("[error]: {}", msg);
-    eprintln!("{}", error_msg)
+    eprintln!("{} {}", "[Error]:".bold().red(), msg)
 }
