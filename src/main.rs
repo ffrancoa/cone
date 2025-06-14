@@ -1,3 +1,4 @@
+use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
 mod cx;
@@ -49,11 +50,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
                 if commands.contains(&cmd) {
                      io::print_info(format!("You've entered the '{}' command.", cmd))
                 } else {
-                    io::print_error(format!("command '{}' does not exist", cmd))
+                    io::print_error(format!("Command '{}' does not exist.", cmd))
                 }
             }
-            Err(_) => {
+            Err(ReadlineError::Interrupted) => {
                 io::print_error("Process interrupted. Exiting safely...");
+                break
+            }
+            Err(err) => {
+                io::print_error(format!("Something went wrong: {:?}.", err));
                 break
             }
         }
