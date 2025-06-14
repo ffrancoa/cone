@@ -1,19 +1,24 @@
-use rustyline::completion::{Completer, FilenameCompleter, Pair};
-use rustyline::highlight::Highlighter;
-use rustyline::hint::Hinter;
-use rustyline::validate::Validator;
-use rustyline::{Context, Helper, Result};
+use std::borrow::Cow;
 
-/// Helper structure for the REPL, implementing Completer and other rustyline traits.
+use crossterm::style::{Color, Stylize};
+use rustyline::{
+    CompletionType, Context, Helper, Result,
+    completion::{Completer, FilenameCompleter, Pair},
+    highlight::{Highlighter, CmdKind},
+    hint::Hinter,
+    validate::Validator,
+};
+
+/// Helper for REPL, implementing completion, highlighting, and validation.
 pub struct ReadLineHelper {
-    /// List of supported commands for autocompleting the first token.
+    /// Supported commands for autocompletion.
     commands: Vec<String>,
-    /// Filename completer for completing file paths after certain commands.
+    /// Completer for file paths.
     file_completer: FilenameCompleter,
 }
 
 impl ReadLineHelper {
-    /// Create a new helper with a list of supported commands.
+    /// Create a new helper with the given commands.
     pub fn new(commands: Vec<String>) -> Self {
         Self {
             commands,
@@ -22,14 +27,8 @@ impl ReadLineHelper {
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// Trait implementations
-/////////////////////////////////////////////////////////////////////////////////////////
-
-/// Marker trait for helpers.
 impl Helper for ReadLineHelper {}
 
-/// Provide completion candidates for commands and arguments.
 impl Completer for ReadLineHelper {
     type Candidate = Pair;
 
@@ -39,75 +38,109 @@ impl Completer for ReadLineHelper {
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>)> {
-        // Text up to the cursor.
+        // slice input up to cursor pos
         let input = &line[..pos];
-        // Split into tokens by whitespace.
-        let tokens: Vec<_> = input.split_whitespace().collect();
+        let tokens: Vec<&str> = input.split_whitespace().collect();
 
-        // If nothing has been typed, return no suggestions.
         if tokens.is_empty() {
             return Ok((0, Vec::new()));
         }
 
-        // Case 1: completing the first token (command), when there's no trailing space.
+        // complete first token for commands
         if tokens.len() == 1 && !line.ends_with(' ') {
             let prefix = tokens[0].to_ascii_uppercase();
-            let mut candidates = Vec::new();
-            for cmd in &self.commands {
-                if cmd.to_ascii_uppercase().starts_with(&prefix) {
-                    candidates.push(Pair {
-                        display: cmd.clone(),
-                        replacement: cmd.clone(),
-                    });
-                }
-            }
-            // Replace from the start of the token (position 0).
+            let candidates = self
+                .commands
+                .iter()
+                .filter(|cmd| cmd.to_ascii_uppercase().starts_with(&prefix))
+                .map(|cmd| Pair {
+                    display: cmd.clone(),
+                    replacement: cmd.clone(),
+                })
+                .collect();
             return Ok((0, candidates));
         }
 
-        // Case 2: completing arguments for specific commands
+        // complete arguments for 'load' command
         let command = tokens[0];
         if command.eq_ignore_ascii_case("load") {
-            // Determine the path prefix the user has started typing
-            let path_prefix = if tokens.len() > 1 {
-                // Everything after "load " up to the cursor
-                let start = line
-                    .find(command)
-                    .expect("command must be present")
-                    + command.len()
-                    + 1;
-                &line[start..pos]
-            } else {
-                "" // space after command but nothing else
-            };
-
-            // Delegate to the filename completer
-            let (start_offset, file_candidates) =
-                self.file_completer.complete(path_prefix, path_prefix.len(), ctx)?;
-            // Adjust the returned start index to the full-line offset
-            let global_offset = line
+            // determine path prefix
+            let start = line
                 .find(command)
                 .expect("command must be present")
                 + command.len()
-                + 1
-                + start_offset;
+                + 1;
+            let path_prefix = if tokens.len() > 1 {
+                &line[start..pos]
+            } else {
+                ""
+            };
+
+            // delegate to filename completer
+            let (off, file_candidates) =
+                self.file_completer.complete(path_prefix, path_prefix.len(), ctx)?;
+            let global_offset = start + off;
             return Ok((global_offset, file_candidates));
         }
 
-        // Default: no suggestions
+        // no suggestions
         Ok((0, Vec::new()))
     }
 }
 
-/// Optional: provide inline hints while typing.
 impl Hinter for ReadLineHelper {
     type Hint = String;
 
     fn hint(&self, _line: &str, _pos: usize, _ctx: &Context<'_>) -> Option<String> {
-        None // No hints for now
+        None  // no hints
     }
 }
 
-/// Empty implementations for highlighting and validation.
-impl Highlighter for ReadLineHelper {}
 impl Validator for ReadLineHelper {}
+
+impl Highlighter for ReadLineHelper {
+    fn highlight<'l>(&self, line: &'l str, _pos: usize) -> Cow<'l, str> {
+        // skip empty lines
+        let trimmed = line.trim_start();
+        if trimmed.is_empty() {
+            return Cow::Borrowed(line);
+        }
+
+        let first_non_space = match line.find(|c: char| !c.is_whitespace()) {
+            Some(i) => i,
+            None => return Cow::Borrowed(line),
+        };
+        let rest = &line[first_non_space..];
+        let end_rel = rest.find(char::is_whitespace).unwrap_or(rest.len());
+        let end_of_token = first_non_space + end_rel;
+        let token = &line[first_non_space..end_of_token];
+
+        // only highlight exact command matches
+        if !self.commands.iter().any(|c| c.eq_ignore_ascii_case(token)) {
+            return Cow::Borrowed(line);
+        }
+
+        // uppercase and color the token for display
+        let styled_token = token
+            .to_ascii_uppercase()
+            .with(Color::Green)  // change to preference
+            .bold()
+            .to_string();
+
+        let leading = &line[..first_non_space];
+        let trailing = &line[end_of_token..];
+        Cow::Owned(format!("{}{}{}", leading, styled_token, trailing))
+    }
+
+    fn highlight_candidate<'c>(
+        &self,
+        candidate: &'c str,
+        _completion: CompletionType,
+    ) -> Cow<'c, str> {
+        Cow::Borrowed(candidate)
+    }
+
+    fn highlight_char(&self, _line: &str, _pos: usize, _kind: CmdKind) -> bool {
+        true
+    }
+}
