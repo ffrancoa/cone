@@ -1,13 +1,28 @@
 use std::{error, fs};
 
-use clap::Command;
-use rustyline::error::ReadlineError;
-use rustyline::Editor;
+use clap::{
+    Command,
+    crate_description,
+    crate_name,
+    crate_version};
+use rustyline::{
+    Editor,
+    error::ReadlineError,
+};
 
 mod cx;
 use crate::cx::{io, repl};
 
+/// Name of the file where REPL history is stored.
 const HISTORY_FILE: &str = ".cone_history";
+
+
+/// Build the CLI using `clap`.
+fn build_cli() -> Command {
+    Command::new(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
+}
 
 /// Run the main application logic.
 fn run_app() -> Result<(), Box<dyn error::Error>> {
@@ -61,19 +76,17 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
         }
     }
 
-    // save history on exit
+    // save history upon exit
     rl.save_history(HISTORY_FILE)?;
     Ok(())
 }
 
 fn main() {
-    let _ = Command::new(clap::crate_name!())
-        .version(clap::crate_version!()) // usa la versión del Cargo.toml automáticamente
-        .about("CONE: CPTu Operations and Numerical Exploration.") // descripción breve del programa
-        .get_matches();
+    // parse command-line options (currently only --help, --version)
+    let _matches = build_cli().get_matches();
 
     if let Err(err) = run_app() {
-        io::print_error(format!("Application error: {}.", err));
+        io::print_error(format!("Application error: {}", err));
         std::process::exit(1);
     }
 }
