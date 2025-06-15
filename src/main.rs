@@ -73,7 +73,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
                 break
             }
             Err(err) => {
-                io::print_error(format!("Something went wrong ({}).", err));
+                io::print_error(format!("something went wrong ({}).", err));
                 break
             }
         }

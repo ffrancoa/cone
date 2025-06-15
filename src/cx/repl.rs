@@ -63,10 +63,9 @@ impl Completer for ReadLineHelper {
 
         // complete arguments for 'load' command
         if tokens[0] == "load"
-            && tokens.len() == 2
             && matches!(tokens[1], "-f" | "--file" | "-d" | "--dir")
-            && line.ends_with(' ') {
-            // support: load -flag [cursor here with space]
+            && (tokens.len() == 3 || (tokens.len() == 2 && line.ends_with(' ')))
+        {
             return self.file_completer.complete(line, pos, ctx);
         }
 
@@ -107,10 +106,10 @@ impl Highlighter for ReadLineHelper {
             return Cow::Borrowed(line);
         }
 
-        // lowercase and color the token for display
+        // bold and color the token for display
         let styled_token = token
-            .with(Color::Green)  // change to preference
             .bold()
+            .with(Color::Green)  // change to preference
             .to_string();
 
         let leading = &line[..first_non_space];
