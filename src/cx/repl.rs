@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crossterm::style::{Color, Stylize};
 use rustyline::{
     CompletionType, Context, Helper, Result,
-    completion::{Completer, FilenameCompleter, Pair},
+    completion::{Completer, Pair},
     highlight::{Highlighter, CmdKind},
     hint::Hinter,
     validate::Validator,
@@ -13,8 +13,6 @@ use rustyline::{
 pub struct ReadLineHelper {
     /// Supported commands for autocompletion.
     commands: Vec<String>,
-    /// Completer for file paths.
-    file_completer: FilenameCompleter,
 }
 
 impl ReadLineHelper {
@@ -22,7 +20,6 @@ impl ReadLineHelper {
     pub fn new(commands: Vec<String>) -> Self {
         Self {
             commands,
-            file_completer: FilenameCompleter::new(),
         }
     }
 }
@@ -36,7 +33,7 @@ impl Completer for ReadLineHelper {
         &self,
         line: &str,
         pos: usize,
-        ctx: &Context<'_>,
+        _ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>)> {
         // slice input up to cursor pos
         let input = &line[..pos];
@@ -59,28 +56,6 @@ impl Completer for ReadLineHelper {
                 })
                 .collect();
             return Ok((0, candidates));
-        }
-
-        // complete arguments for 'load' command
-        let command = tokens[0];
-        if command.eq_ignore_ascii_case("load") {
-            // determine path prefix
-            let start = line
-                .find(command)
-                .expect("command must be present")
-                + command.len()
-                + 1;
-            let path_prefix = if tokens.len() > 1 {
-                &line[start..pos]
-            } else {
-                ""
-            };
-
-            // delegate to filename completer
-            let (off, file_candidates) =
-                self.file_completer.complete(path_prefix, path_prefix.len(), ctx)?;
-            let global_offset = start + off;
-            return Ok((global_offset, file_candidates));
         }
 
         // no suggestions
