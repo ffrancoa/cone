@@ -15,17 +15,15 @@ use crate::cx::{io, repl};
 
 /// Name of the file where REPL history is stored.
 const HISTORY_FILE: &str = ".cone_history";
+/// Code of the current program.
+const APP_CODE: &str = "CX-01";
 
 
 /// Build the CLI using `clap`.
 fn build_cli() -> Command {
     Command::new(crate_name!())
         .version(crate_version!())
-        .about(format!(
-            "{}: {}",
-            crate_name!().to_ascii_uppercase(),
-            crate_description!()
-        ))
+        .about(format!("{}.", crate_description!()))
 }
 
 /// Run the main application logic.
@@ -43,6 +41,9 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     let helper = repl::ReadLineHelper::new(commands.clone());
     let mut rl = Editor::new()?;
     rl.set_helper(Some(helper));
+
+    // print header when the REPL starts
+    io::header(APP_CODE);
 
     // load or create history file if it doesn't exists
     if rl.load_history(HISTORY_FILE).is_err() {
