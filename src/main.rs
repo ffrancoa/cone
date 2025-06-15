@@ -11,7 +11,7 @@ use rustyline::{
 };
 
 mod cx;
-use crate::cx::{io, repl};
+use crate::cx::{cmd, io, repl};
 
 /// Name of the file where REPL history is stored.
 const HISTORY_FILE: &str = ".cone_history";
@@ -29,16 +29,17 @@ fn build_cli() -> Command {
 /// Run the main application logic.
 fn run_app() -> Result<(), Box<dyn error::Error>> {
     // supported commands for the REPL
+    // TODO: switch commands to lowercase
     let commands = [
         "CLEAN", "COMPUTE", "EXIT", "HELP",
-        "LIST", "LOAD", "PREVIEW", "PROCESS",
+        "LOAD", "PREVIEW", "SAVE",
     ]
     .iter()
     .map(|s| s.to_string())
     .collect::<Vec<String>>();
 
     // initialize line editor with helper
-    let helper = repl::ReadLineHelper::new(commands.clone());
+    let helper = repl::ReadLineHelper::new(commands);
     let mut rl = Editor::new()?;
     rl.set_helper(Some(helper));
 
@@ -57,22 +58,16 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 
     // main REPL loop
     loop {
-        match rl.readline("\nCX ❯ ") {
-            Ok(input) => {
-                let entry = input.trim();
-                if entry.is_empty() {
+        match rl.readline("CX ❯ ") {
+            Ok(buffer) => {
+                let trimmed_line = buffer.trim();
+                if trimmed_line.is_empty() {
                     continue
                 }
-                rl.add_history_entry(entry)?;
+                rl.add_history_entry(trimmed_line)?;
 
-                let args: Vec<&str> = entry.split_whitespace().collect();
-                let cmd = args[0].to_ascii_uppercase();
+                cmd::parse_input_line(trimmed_line);
 
-                if commands.contains(&cmd) {
-                    io::print_info(format!("You've entered the '{}' command.", cmd));
-                } else {
-                    io::print_error(format!("Command '{}' does not exist.", cmd));
-                }
             }
             Err(ReadlineError::Interrupted) => {
                 io::print_error("Process interrupted. Exiting safely...");
