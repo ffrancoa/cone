@@ -1,14 +1,14 @@
 [package]
-name = "cone"
-version = "0.2.0"
+name        = "cone"
+version     = "0.2.0"
 description = "CPTu Operations and Numerical Exploration"
-repository = "https://github.com/ffrancoa/cone"
-license = "MIT"
-edition = "2024"
+repository  = "https://github.com/ffrancoa/cone"
+license     = "MIT"
+edition     = "2024"
 
 [dependencies]
-clap        = { version = "4.5.40", features = ["cargo", "derive", "color"] }
+clap        = { version = "4.5.40", features = ["cargo", "derive"] }
 crossterm   = "0.29.0"
 rustyline   = "16.0.0"
-shlex = "1.3.0"
+shlex       = "1.3.0"
 tabled      = "0.20.0"
