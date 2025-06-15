@@ -17,9 +17,7 @@ enum Commands {
     Exit,
 }
 
-/// Top-level parser for REPL commands.
-///
-/// Supports multiple invocations without exiting on first parse error.
+/// CONE: Top-level parser for REPL commands.
 #[derive(Parser, Debug)]
 #[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {

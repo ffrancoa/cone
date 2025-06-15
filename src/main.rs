@@ -69,7 +69,8 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 
             }
             Err(ReadlineError::Interrupted) => {
-                io::print_error("Process interrupted. Exiting safely...");
+                io::print_error("process interrupted");
+                io::print_error("exiting safely...");
                 break
             }
             Err(err) => {

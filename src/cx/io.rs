@@ -46,17 +46,17 @@ pub fn header(app_code: &str) {
 /// Prints a succesfull-operation message to stdout,
 /// styled with green text.
 pub fn print_info(msg: impl Display) {
-    println!("{} {}", "info:".bold().green(), msg.to_string().green())
+    println!("{} {}", "info:".bold().green(), msg)
 }
 
 /// Prints a warning message to stderr,
 /// styled with yellow text.
 pub fn print_warn(msg: impl Display) {
-    eprintln!("{} {}", "warning:".bold().yellow(), msg.to_string().yellow())
+    eprintln!("{} {}", "warning:".bold().yellow(), msg)
 }
 
 /// Prints an error message to stderr,
 /// styled with red text.
 pub fn print_error(msg: impl Display) {
-    eprintln!("{} {}", "error:".bold().red(), msg.to_string().red())
+    eprintln!("{} {}", "error:".bold().red(), msg)
 }
