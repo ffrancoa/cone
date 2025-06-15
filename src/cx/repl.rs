@@ -48,11 +48,11 @@ impl Completer for ReadLineHelper {
 
         // complete first token for commands
         if tokens.len() == 1 && !line.ends_with(' ') {
-            let prefix = tokens[0].to_ascii_uppercase();
+            let prefix = tokens[0];
             let candidates = self
                 .commands
                 .iter()
-                .filter(|cmd| cmd.to_ascii_uppercase().starts_with(&prefix))
+                .filter(|cmd| cmd.starts_with(prefix))
                 .map(|cmd| Pair {
                     display: cmd.clone(),
                     replacement: cmd.clone(),
@@ -116,13 +116,12 @@ impl Highlighter for ReadLineHelper {
         let token = &line[first_non_space..end_of_token];
 
         // only highlight exact command matches
-        if !self.commands.iter().any(|c| c.eq_ignore_ascii_case(token)) {
+        if !self.commands.iter().any(|c| c.eq(token)) {
             return Cow::Borrowed(line);
         }
 
-        // uppercase and color the token for display
+        // lowercase and color the token for display
         let styled_token = token
-            .to_ascii_uppercase()
             .with(Color::Green)  // change to preference
             .bold()
             .to_string();

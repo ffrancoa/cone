@@ -29,10 +29,9 @@ fn build_cli() -> Command {
 /// Run the main application logic.
 fn run_app() -> Result<(), Box<dyn error::Error>> {
     // supported commands for the REPL
-    // TODO: switch commands to lowercase
     let commands = [
-        "CLEAN", "COMPUTE", "EXIT", "HELP",
-        "LOAD", "PREVIEW", "SAVE",
+        "clean", "compute", "exit", "help",
+        "load", "preview", "save",
     ]
     .iter()
     .map(|s| s.to_string())
