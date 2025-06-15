@@ -1,82 +1,101 @@
-use clap::{Parser, Subcommand, Args};
+use clap::{Args, Parser, Subcommand};
 use shlex::split;
 
+use crate::io;
 
+
+/// CLI commands supported by the REPL.
 #[derive(Subcommand, Debug)]
 enum Commands {
-    /// Carga un archivo o directorio
+    /// Load a file or directory.
     Load(LoadCmd),
-    /// Previsualiza datos cargados
+    /// Preview loaded data.
     Preview(PreviewCmd),
-    /// Filtra resultados
+    /// Filter results based on a pattern.
     Filter(FilterCmd),
-    /// Sale del REPL
-    Exit,  // comando "exit" sin argumentos
+    /// Exit the REPL.
+    Exit,
 }
 
-/// Estructura principal del REPL CLI
+/// Top-level parser for REPL commands.
+///
+/// Supports multiple invocations without exiting on first parse error.
 #[derive(Parser, Debug)]
 #[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {
-    /// Campo que representa el comando introducido (subcomando)
+    /// The entered subcommand.
     #[command(subcommand)]
     command: Commands,
 }
 
+
+/// Parse a line of input and execute the corresponding command.
+///
+/// Splits the input as shell tokens, parses it into `ReplCli`, and dispatches to handlers.
 pub fn parse_input_line(line: &str) {
-    // Intentar dividir la línea en tokens estilo shell
+    // try splitting input into shell-like tokens
     if let Some(args) = split(line) {
-        // Intentar parsear la línea como nuestro CLI:
+        // attempt to parse tokens as our CLI
         match ReplCli::try_parse_from(args) {
             Ok(cli) => {
                 // Tenemos un ReplCli parseado correctamente
                 match cli.command {
-                    Commands::Load(cmd) => {
-                        println!("You choose the LOAD command. ({:?})", cmd)
+                    Commands::Load(_) => {
+                        io::print_info("You choosed the LOAD command.")
                      },
-                    Commands::Preview(cmd) => {
-                        println!("You choosed the PREVIEW command. ({:?})", cmd)
+                    Commands::Preview(_) => {
+                        io::print_info("You choosed the PREVIEW command.")
                      },
-                    Commands::Filter(cmd)  => {
-                        println!("You choosed the LOAD command. ({:?})", cmd)
+                    Commands::Filter(_) => {
+                        io::print_info("You choosed the FILTER command.")
                      },
-                    Commands::Exit         => {
-                        println!("You left me.")
+                    Commands::Exit => {
+                        io::print_info("bye bye")
                      },
                 }
             },
-            Err(error_or_help_msg) => { error_or_help_msg.print().unwrap() }
+            Err(err) => {
+                // print clap-generated error or help message
+                let _ = err.print();
+            }
         }
     }
 }
 
+/// Arguments for the `load` subcommand.
 #[derive(Args, Debug)]
 struct LoadCmd {
-    #[arg(short = 'f', long = "file", value_name = "FILE", 
-          help = "Ruta de archivo a cargar")]
+    /// Path of file to load.
+    #[arg(short = 'f', long, value_name = "FILE", help = "path of file to load")]
     file: Option<String>,
 
-    #[arg(long = "dir", value_name = "DIR", 
-          help = "Ruta de directorio a cargar")]
+    /// Path of directory to load.
+    #[arg(long, value_name = "DIR", help = "path of directory to load")]
     dir: Option<String>,
 
-    #[arg(long = "ignore-case", short = 'i', 
-          help = "Ignorar mayúsculas/minúsculas en la operación")]
+    /// ignore case when processing.
+    #[arg(short = 'i', long, help = "ignore case in operation")]
     ignore_case: bool,
 }
 
+/// Arguments for the `preview` subcommand.
+///
+/// Customize preview options such as number of lines (future extension).
 #[derive(Args, Debug)]
 struct PreviewCmd {
-    // Ejemplo: si se quisiera una opción --lines (-n) para número de líneas:
-    // #[arg(short = 'n', long = "lines", default_value = "10", help = "Número de líneas a mostrar")]
+    // example: number of lines to preview
+    // #[arg(short = 'n', long, default_value = "10", help = "number of lines to show")]
     // pub lines: usize,
 }
 
+/// Arguments for the `filter` subcommand.
 #[derive(Args, Debug)]
 struct FilterCmd {
-    #[arg(name = "PATTERN", help = "Patrón de filtro a aplicar")]
+    /// Pattern to filter by.
+    #[arg(value_name = "PATTERN", help = "pattern to filter by")]
     pattern: String,
 
-    #[arg(long = "ignore-case", short = 'i', help = "Filtro sin distinguir mayúsculas")]
+    /// filter without case sensitivity.
+    #[arg(short = 'i', long, help = "filter without case sensitivity")]
     ignore_case: bool,
 }
