@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand, Args, ColorChoice};
+use clap::{Parser, Subcommand, Args};
 use shlex::split;
 
 
@@ -16,7 +16,7 @@ enum Commands {
 
 /// Estructura principal del REPL CLI
 #[derive(Parser, Debug)]
-#[command(multicall = true, disable_help_flag = true, color = ColorChoice::Always)]
+#[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {
     /// Campo que representa el comando introducido (subcomando)
     #[command(subcommand)]
@@ -45,10 +45,7 @@ pub fn parse_input_line(line: &str) {
                      },
                 }
             },
-            Err(e) => {
-                // Ocurrió un error de parseo: mostrar mensaje de error/ayuda
-                eprint!("{}", e);  // e implementa Display, incluye mensaje y uso
-            }
+            Err(error_or_help_msg) => { error_or_help_msg.print().unwrap() }
         }
     }
 }
