@@ -39,7 +39,7 @@ pub fn header(app_code: &str) {
     table.with(Remove::row(Rows::first()));
     table.with(Width::increase(app_width()));
 
-    println!("\n{}", table.to_string().bold().green());
+    println!("\n{}", table.to_string().bold().blue());
 }
 
 

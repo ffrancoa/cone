@@ -47,8 +47,12 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 
     // load or create history file if it doesn't exists
     if rl.load_history(HISTORY_FILE).is_err() {
+        println!();
         io::print_warn("No previous history. Creating a new one...");
-        fs::File::create(HISTORY_FILE)?;
+        fs::File::create(HISTORY_FILE)
+            .map(|_| io::print_info("History file created successfully."))
+            .map_err(|_| io::print_error("History file cannot be created."))
+            .ok();
     }
 
     // main REPL loop
