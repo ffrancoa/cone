@@ -53,7 +53,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 
     // main REPL loop
     loop {
-        match rl.readline("CX ❯ ") {
+        match rl.readline("\nCX ❯ ") {
             Ok(input) => {
                 let entry = input.trim();
                 if entry.is_empty() {
