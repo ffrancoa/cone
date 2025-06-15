@@ -48,9 +48,9 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     // load or create history file if it doesn't exists
     if rl.load_history(HISTORY_FILE).is_err() {
         println!();
-        io::print_warn("No previous history. Creating a new one...");
+        io::print_warn(format!("no '{}' file in current directory", HISTORY_FILE));
         let _ = fs::File::create(HISTORY_FILE)
-            .map(|_| io::print_info("history file created successfully"))
+            .map(|_| io::print_info("history file created"))
             .map_err(|_| io::print_error("history file cannot be created"));
     }
 
