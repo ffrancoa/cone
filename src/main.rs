@@ -49,15 +49,14 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     if rl.load_history(HISTORY_FILE).is_err() {
         println!();
         io::print_warn("No previous history. Creating a new one...");
-        fs::File::create(HISTORY_FILE)
-            .map(|_| io::print_info("History file created successfully."))
-            .map_err(|_| io::print_error("History file cannot be created."))
-            .ok();
+        let _ = fs::File::create(HISTORY_FILE)
+            .map(|_| io::print_info("history file created successfully"))
+            .map_err(|_| io::print_error("history file cannot be created"));
     }
 
     // main REPL loop
     loop {
-        match rl.readline("CX ❯ ") {
+        match rl.readline("\nCX ❯ ") {
             Ok(buffer) => {
                 let trimmed_line = buffer.trim();
                 if trimmed_line.is_empty() {

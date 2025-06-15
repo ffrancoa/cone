@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Args, Parser, Subcommand};
 use shlex::split;
 
@@ -64,16 +66,20 @@ pub fn parse_input_line(line: &str) {
 #[derive(Args, Debug)]
 struct LoadCmd {
     /// Path of file to load.
-    #[arg(short = 'f', long, value_name = "FILE", help = "path of file to load")]
-    file: Option<String>,
+    #[arg(
+        short,
+        long,
+        value_name = "FILE",
+    )]
+    file: Option<PathBuf>,
 
     /// Path of directory to load.
-    #[arg(long, value_name = "DIR", help = "path of directory to load")]
-    dir: Option<String>,
-
-    /// ignore case when processing.
-    #[arg(short = 'i', long, help = "ignore case in operation")]
-    ignore_case: bool,
+    #[arg(
+        short,
+        long,
+        value_name = "DIR",
+    )]
+    dir: Option<PathBuf>,
 }
 
 /// Arguments for the `preview` subcommand.

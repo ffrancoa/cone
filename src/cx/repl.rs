@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crossterm::style::{Color, Stylize};
 use rustyline::{
     CompletionType, Context, Helper, Result,
-    completion::{Completer, Pair},
+    completion::{Completer, FilenameCompleter, Pair},
     highlight::{Highlighter, CmdKind},
     hint::Hinter,
     validate::Validator,
@@ -13,6 +13,8 @@ use rustyline::{
 pub struct ReadLineHelper {
     /// Supported commands for autocompletion.
     commands: Vec<String>,
+    /// Completer for file paths.
+    file_completer: FilenameCompleter,
 }
 
 impl ReadLineHelper {
@@ -20,6 +22,7 @@ impl ReadLineHelper {
     pub fn new(commands: Vec<String>) -> Self {
         Self {
             commands,
+            file_completer: FilenameCompleter::new(),
         }
     }
 }
@@ -33,7 +36,7 @@ impl Completer for ReadLineHelper {
         &self,
         line: &str,
         pos: usize,
-        _ctx: &Context<'_>,
+        ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>)> {
         // slice input up to cursor pos
         let input = &line[..pos];
@@ -56,6 +59,15 @@ impl Completer for ReadLineHelper {
                 })
                 .collect();
             return Ok((0, candidates));
+        }
+
+        // complete arguments for 'load' command
+        if tokens[0] == "load"
+            && tokens.len() == 2
+            && matches!(tokens[1], "-f" | "--file" | "-d" | "--dir")
+            && line.ends_with(' ') {
+            // support: load -flag [cursor here with space]
+            return self.file_completer.complete(line, pos, ctx);
         }
 
         // no suggestions
