@@ -8,7 +8,8 @@ edition     = "2024"
 
 [dependencies]
 clap        = { version = "4.5.40", features = ["cargo", "derive"] }
-crossterm   = "0.29.0"
-rustyline   = "16.0.0"
-shlex       = "1.3.0"
-tabled      = "0.20.0"
+crossterm   = { version = "0.29.0" }
+polars      = { version = "0.48.1", features = ["lazy"] }
+rustyline   = { version = "16.0.0" }
+shlex       = { version = "1.3.0" }
+tabled      = { version = "0.20.0" }
