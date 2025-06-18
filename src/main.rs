@@ -62,9 +62,12 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
                 if trimmed_line.is_empty() {
                     continue
                 }
+
                 rl.add_history_entry(trimmed_line)?;
 
-                cmd::parse_input_line(trimmed_line);
+                if !cmd::parse_input_line(trimmed_line) {
+                    break
+                }
 
             }
             Err(ReadlineError::Interrupted) => {

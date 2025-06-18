@@ -15,11 +15,11 @@ enum Commands {
     Preview(PreviewCmd),
     /// Filter results based on a pattern.
     Filter(FilterCmd),
-    /// Exit the REPL.
+    /// Exit this program.
     Exit,
 }
 
-/// CONE: Top-level parser for REPL commands.
+/// CX-01 .:. Command Line Interface <CLI>
 #[derive(Parser, Debug)]
 #[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {
@@ -32,7 +32,7 @@ struct ReplCli {
 /// Parse a line of input and execute the corresponding command.
 ///
 /// Splits the input as shell tokens, parses it into `ReplCli`, and dispatches to handlers.
-pub fn parse_input_line(line: &str) {
+pub fn parse_input_line(line: &str) -> bool {
     // try splitting input into shell-like tokens
     if let Some(args) = split(line) {
         // attempt to parse tokens as our CLI
@@ -50,7 +50,9 @@ pub fn parse_input_line(line: &str) {
                         io::print_info("You choosed the FILTER command.")
                      },
                     Commands::Exit => {
-                        io::print_info("bye bye")
+                        io::print_info("exiting...");
+                        io::print_info("goodbye!");
+                        return false
                      },
                 }
             },
@@ -60,6 +62,7 @@ pub fn parse_input_line(line: &str) {
             }
         }
     }
+    true
 }
 
 /// Arguments for the `load` subcommand.
