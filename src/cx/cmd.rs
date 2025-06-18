@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Error, Parser, Subcommand};
+use polars::prelude::DataFrame;
 use shlex::split;
 
 use crate::io;
@@ -32,7 +33,7 @@ struct ReplCli {
 /// Parse a line of input and execute the corresponding command.
 ///
 /// Splits the input as shell tokens, parses it into `ReplCli`, and dispatches to handlers.
-pub fn parse_input_line(line: &str) -> bool {
+pub fn execute(_dataset: &mut DataFrame, line: &str) -> Result<bool, Error> {
     // try splitting input into shell-like tokens
     if let Some(args) = split(line) {
         // attempt to parse tokens as our CLI
@@ -40,6 +41,11 @@ pub fn parse_input_line(line: &str) -> bool {
             Ok(cli) => {
                 // Tenemos un ReplCli parseado correctamente
                 match cli.command {
+                    Commands::Exit => {
+                        io::print_info("exiting...");
+                        io::print_info("goodbye!");
+                        return Ok(false)
+                     },
                     Commands::Load(_) => {
                         io::print_info("You choosed the LOAD command.")
                      },
@@ -49,11 +55,6 @@ pub fn parse_input_line(line: &str) -> bool {
                     Commands::Filter(_) => {
                         io::print_info("You choosed the FILTER command.")
                      },
-                    Commands::Exit => {
-                        io::print_info("exiting...");
-                        io::print_info("goodbye!");
-                        return false
-                     },
                 }
             },
             Err(err) => {
@@ -62,8 +63,9 @@ pub fn parse_input_line(line: &str) -> bool {
             }
         }
     }
-    true
+    Ok(true)
 }
+
 
 /// Arguments for the `load` subcommand.
 #[derive(Args, Debug)]

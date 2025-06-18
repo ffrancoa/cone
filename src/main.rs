@@ -5,6 +5,7 @@ use clap::{
     crate_description,
     crate_name,
     crate_version};
+use polars::prelude::DataFrame;
 use rustyline::{
     Editor,
     error::ReadlineError,
@@ -54,6 +55,9 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
             .map_err(|_| io::print_error("history file cannot be created"));
     }
 
+    // allocate an empty dataset
+    let mut data = DataFrame::empty();
+
     // main REPL loop
     loop {
         match rl.readline("\nCX ❯ ") {
@@ -63,12 +67,11 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
                     continue
                 }
 
-                rl.add_history_entry(trimmed_line)?;
-
-                if !cmd::parse_input_line(trimmed_line) {
-                    break
+                if let Ok(false) = cmd::execute(&mut data, trimmed_line) {
+                    break;
                 }
 
+                rl.add_history_entry(trimmed_line)?;
             }
             Err(ReadlineError::Interrupted) => {
                 io::print_error("process interrupted");
