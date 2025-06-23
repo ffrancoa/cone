@@ -63,6 +63,7 @@ impl Completer for ReadLineHelper {
 
         // complete arguments for 'load' command
         if tokens[0] == "load"
+            && tokens.len() >= 2
             && matches!(tokens[1], "-f" | "--file" | "-d" | "--dir")
             && (tokens.len() == 3 || (tokens.len() == 2 && line.ends_with(' ')))
         {
