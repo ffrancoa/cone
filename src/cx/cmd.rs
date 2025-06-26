@@ -4,7 +4,7 @@ use clap::{Args, Error, Parser, Subcommand};
 use polars::prelude::DataFrame;
 use shlex::split;
 
-use crate::io;
+use crate::cx::io;
 
 
 /// CLI commands supported by the REPL.
@@ -47,11 +47,11 @@ pub fn execute(line: &str, _dataset: &mut DataFrame) -> Result<bool, Error> {
                     },
                     Commands::Load(args) => {
                         if let Some(file) = &args.file {
-                            io::print_info(format!("Loading file: {:?}", file));
+                            io::print_info(format!("loading file: {:?}", file));
                         } else if let Some(dir) = &args.dir {
-                            io::print_info(format!("Loading directory: {:?}", dir));
+                            io::print_info(format!("loading directory: {:?}", dir));
                         } else {
-                            io::print_warn("No file or directory provided.");
+                            io::print_error("no file or directory provided.");
                         }
                     },
                     Commands::Preview(_) => {

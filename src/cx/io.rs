@@ -43,7 +43,7 @@ pub fn header(app_code: &str) {
 }
 
 
-/// Prints a succesfull-operation message to stdout,
+/// Prints a successfull-operation message to stdout,
 /// styled with green text.
 pub fn print_info(msg: impl Display) {
     println!("{} {}", "info:".bold().green(), msg)
