@@ -33,28 +33,33 @@ struct ReplCli {
 /// Parse a line of input and execute the corresponding command.
 ///
 /// Splits the input as shell tokens, parses it into `ReplCli`, and dispatches to handlers.
-pub fn execute(_dataset: &mut DataFrame, line: &str) -> Result<bool, Error> {
+pub fn execute(line: &str, _dataset: &mut DataFrame) -> Result<bool, Error> {
     // try splitting input into shell-like tokens
     if let Some(args) = split(line) {
         // attempt to parse tokens as our CLI
         match ReplCli::try_parse_from(args) {
             Ok(cli) => {
-                // Tenemos un ReplCli parseado correctamente
                 match cli.command {
                     Commands::Exit => {
                         io::print_info("exiting...");
                         io::print_info("goodbye!");
                         return Ok(false)
-                     },
-                    Commands::Load(_) => {
-                        io::print_info("You choosed the LOAD command.")
-                     },
+                    },
+                    Commands::Load(args) => {
+                        if let Some(file) = &args.file {
+                            io::print_info(format!("Loading file: {:?}", file));
+                        } else if let Some(dir) = &args.dir {
+                            io::print_info(format!("Loading directory: {:?}", dir));
+                        } else {
+                            io::print_warn("No file or directory provided.");
+                        }
+                    },
                     Commands::Preview(_) => {
                         io::print_info("You choosed the PREVIEW command.")
-                     },
+                    },
                     Commands::Filter(_) => {
                         io::print_info("You choosed the FILTER command.")
-                     },
+                    },
                 }
             },
             Err(err) => {

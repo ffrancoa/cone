@@ -63,11 +63,12 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
         match rl.readline("\nCX ❯ ") {
             Ok(buffer) => {
                 let trimmed_line = buffer.trim();
+
                 if trimmed_line.is_empty() {
                     continue
                 }
 
-                if let Ok(false) = cmd::execute(&mut data, trimmed_line) {
+                if let Ok(false) = cmd::execute(trimmed_line, &mut data) {
                     break;
                 }
 
