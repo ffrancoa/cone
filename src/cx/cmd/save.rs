@@ -14,9 +14,9 @@ pub struct SaveCmd {
 
 pub fn run(cmd: SaveCmd, _dataset: &mut DataFrame) {
     io::print_info(format!(
-        "Filtering with pattern: '{}' (ignore_case: {})",
+        "filtering with pattern: '{}' (ignore_case: {})",
         cmd.pattern, cmd.ignore_case
     ));
 
-    // TODO: Implement actual filtering
+    // implement logic to save the current dataset
 }

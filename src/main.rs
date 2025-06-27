@@ -27,9 +27,9 @@ fn build_cli() -> Command {
         .about(format!("{}.", crate_description!()))
 }
 
-/// Run the main application logic.
+/// Runs the main application loop and REPL interface.
 fn run_app() -> Result<(), Box<dyn error::Error>> {
-    // supported commands for the REPL
+    // list of accepted REPL commands for hinting and highlighting
     let commands = [
         "clean", "compute", "exit", "help",
         "load", "preview", "save",
@@ -46,7 +46,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     // print header when the REPL starts
     io::header(APP_CODE);
 
-    // load or create history file if it doesn't exists
+    // load history file or create it if it does not exist
     if rl.load_history(HISTORY_FILE).is_err() {
         println!();
         io::print_warn(format!("no '{}' file in current directory", HISTORY_FILE));

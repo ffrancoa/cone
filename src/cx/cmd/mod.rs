@@ -29,7 +29,7 @@ struct ReplCli {
     command: Commands,
 }
 
-/// Parse a line of input and execute the corresponding command.
+/// Parses a line of input and executes the corresponding command.
 ///
 /// Splits the input as shell tokens, parses it into `ReplCli`, and dispatches to handlers.
 pub fn execute(line: &str, dataset: &mut DataFrame) -> Result<bool, Error> {

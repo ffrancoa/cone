@@ -19,7 +19,7 @@ fn app_width() -> usize {
         .unwrap_or(APP_WIDTH_LIMIT)
 }
 
-/// Print a styled header above the REPL
+/// Prints a styled header banner above the REPL interface.
 ///
 /// The header shows either the crate name or description,
 /// depending on terminal width.

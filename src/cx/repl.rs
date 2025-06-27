@@ -11,7 +11,7 @@ use rustyline::{
 
 /// Helper for REPL, implementing completion, highlighting, and validation.
 pub struct ReadLineHelper {
-    /// Supported commands for autocompletion.
+    /// List of supported commands used for autocompletion.
     commands: Vec<String>,
     /// Completer for file paths.
     file_completer: FilenameCompleter,
@@ -38,7 +38,7 @@ impl Completer for ReadLineHelper {
         pos: usize,
         ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>)> {
-        // slice input up to cursor pos
+        // slice input text up to current cursor position
         let input = &line[..pos];
         let tokens: Vec<&str> = input.split_whitespace().collect();
 
@@ -123,7 +123,7 @@ impl Highlighter for ReadLineHelper {
         prompt: &'p str,
         _default: bool,
     ) -> Cow<'b, str> {
-        // change to preference
+        // customize this style as desired
         let colored = prompt.with(Color::Blue).bold().to_string();
         Cow::Owned(colored)
     }

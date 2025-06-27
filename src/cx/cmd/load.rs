@@ -39,14 +39,14 @@ pub fn run(cmd: LoadCmd, _dataset: &mut DataFrame) {
     }
 }
 
-/// A `clap`-compatible parser that always expects a `.csv` file.
+/// A helper parser that validates `.csv` file paths.
 fn file_parser(s: &str) -> Result<PathBuf, Box<dyn Error + Send + Sync + 'static>> {
     let path = PathBuf::from(s);
 
-    // 1. check existence
+    // check existence
     if !path.exists() { return Err("file does not exist".into()) }
 
-    // 2. check extension (case‐insensitive)
+    // check file extension (case-insensitive)
     match path.extension().and_then(|ext| ext.to_str()) {
         Some(ext) if ext.eq_ignore_ascii_case(REQUIRED_FILE_EXT) => Ok(path),
         _ => Err("provided file does not have a valid extension".into()),
