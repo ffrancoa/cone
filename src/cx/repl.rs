@@ -61,7 +61,7 @@ impl Completer for ReadLineHelper {
             return Ok((0, candidates));
         }
 
-        // complete arguments for 'load' command
+        // provide autocompletion for file/directory arguments in 'load' command
         if tokens[0] == "load"
             && tokens.len() >= 2
             && matches!(tokens[1], "-f" | "--file" | "-d" | "--dir")

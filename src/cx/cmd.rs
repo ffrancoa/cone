@@ -55,7 +55,7 @@ pub fn execute(line: &str, _dataset: &mut DataFrame) -> Result<bool, Error> {
                         }
                     },
                     Commands::Preview(_) => {
-                        io::print_info("You choosed the PREVIEW command.")
+                        io::print_info("You chose the PREVIEW command.")
                     },
                     Commands::Filter(_) => {
                         io::print_info("You choosed the FILTER command.")
