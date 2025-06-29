@@ -49,7 +49,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     // load history file or create it if it does not exist
     if rl.load_history(HISTORY_FILE).is_err() {
         println!();
-        io::print_warn(format!("no '{}' file in current directory", HISTORY_FILE));
+        io::print_warn(format!("no '{HISTORY_FILE}' file in current directory"));
         let _ = fs::File::create(HISTORY_FILE)
             .map(|_| io::print_info("history file created"))
             .map_err(|_| io::print_error("history file cannot be created"));
@@ -80,7 +80,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
                 break
             }
             Err(err) => {
-                io::print_error(format!("something went wrong ({}).", err));
+                io::print_error(format!("something went wrong ({err})."));
                 break
             }
         }
@@ -96,7 +96,7 @@ fn main() {
     let _matches = build_cli().get_matches();
 
     if let Err(err) = run_app() {
-        io::print_error(format!("Application error: {}", err));
+        io::print_error(format!("Application error: {err}"));
         std::process::exit(1);
     }
 }

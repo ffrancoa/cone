@@ -115,7 +115,7 @@ impl Highlighter for ReadLineHelper {
 
         let leading = &line[..first_non_space];
         let trailing = &line[end_of_token..];
-        Cow::Owned(format!("{}{}{}", leading, styled_token, trailing))
+        Cow::Owned(format!("{leading}{styled_token}{trailing}"))
     }
 
     fn highlight_prompt<'b, 's: 'b, 'p: 'b>(

@@ -31,7 +31,7 @@ pub fn header(app_code: &str) {
         crate_description!().to_owned()
     };
 
-    let title_msg = format!("{} .::. {}", app_code, app_title);
+    let title_msg = format!("{app_code} .::. {app_title}");
 
     let mut table = Table::new(vec![title_msg]);
     table.with(Style::extended());

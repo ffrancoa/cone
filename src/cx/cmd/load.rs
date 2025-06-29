@@ -83,7 +83,7 @@ fn validate_file_path(path: &Path) -> Option<PathBuf>{
         io::print_error("provided file does not have a valid extension");
         None
     } else {
-        io::print_info(format!("loading file: {:?}", path));
+        io::print_info(format!("loading file: {}", path.display()));
         Some(path.to_path_buf())
     }
 }
@@ -97,7 +97,7 @@ fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
     }
 
     if !path.is_dir() {
-        io::print_error(format!("invalid value: {:?}", path));
+        io::print_error(format!("invalid value: '{}'", path.display()));
         io::print_error("provided path is not a directory");
         return Vec::new()
     }
