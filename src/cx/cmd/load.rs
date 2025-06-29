@@ -1,6 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use clap::{Args, ArgGroup};
 use polars::prelude::*;
@@ -11,50 +10,42 @@ use crate::cx::io;
 /// Paths of validated targets for the `load` command.
 #[derive(Debug)]
 pub struct LoadTargets {
-    pub file: Option<PathBuf>,
-    pub files_from_dir: Vec<PathBuf>,
+    pub files: Vec<PathBuf>,           // multiple file paths
+    pub files_from_dir: Vec<PathBuf>,  // files from a directory
 }
-
 /// Arguments for the `load` subcommand.
 #[derive(Args, Debug)]
 #[command(group(
     ArgGroup::new("load_flags")
-        .args(["file", "dir"])
-        .multiple(true)
+        .args(["files", "dir"])
         .required(true)
 ))]
 pub struct LoadCmd {
-    /// Path of file to load.
-    #[arg(
-        short, long,
-        value_name = "FILE",
-    )]
-    file: Option<PathBuf>,
+    /// Paths of files to load.
+    #[arg(short, long, value_name = "FILE", num_args = 1..)]
+    files: Vec<PathBuf>,
 
     /// Path of directory to load.
-    #[arg(
-        short, long,
-        value_name = "DIR",
-    )]
+    #[arg(short, long, value_name = "DIR")]
     dir: Option<PathBuf>,
 }
 
 /// Executes the `load` command by validating and importing a file or directory.
 pub fn run(cmd: LoadCmd, _dataset: &mut DataFrame) -> Result<bool, clap::Error> {
     let mut targets = LoadTargets {
-        file: None,
+        files: Vec::new(),
         files_from_dir: Vec::new(),
     };
 
-    // validate and load a single file
-    if let Some(path) = &cmd.file {
-        if let Some(file_path) = validate_file_path(path) {
-            targets.file = Some(file_path);
+    // validate and collect valid files from `-f`
+    for path in &cmd.files {
+        if let Some(valid_path) = validate_file_path(path) {
+            targets.files.push(valid_path);
         }
         // TODO: load into `dataset` using Polars
     }
 
-    // validate and load a directory
+    // validate and collect valid files from `-d`
     if let Some(path) = &cmd.dir {
         let files_paths = validate_dir_path(path);
         if !files_paths.is_empty() {
