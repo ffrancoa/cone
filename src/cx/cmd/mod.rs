@@ -43,7 +43,7 @@ pub fn execute(line: &str, dataset: &mut DataFrame) -> Result<bool, Error> {
                         io::print_info("goodbye!");
                         return Ok(false)
                     },
-                    Commands::Load(cmd) => load::run(cmd, dataset),
+                    Commands::Load(cmd) => return load::run(cmd, dataset),
                     Commands::Preview(cmd) => preview::run(cmd, dataset),
                     Commands::Save(cmd) => save::run(cmd, dataset),
                 }
