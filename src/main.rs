@@ -79,8 +79,9 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
                 io::print_error("exiting safely...");
                 break
             }
-            Err(err) => {
-                io::print_error(format!("something went wrong ({err})."));
+            Err(_) => {
+                io::print_error("something went wrong");
+                io::print_error("exiting safely...");
                 break
             }
         }
