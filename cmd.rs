@@ -4,7 +4,7 @@ use clap::{Args, Error, Parser, Subcommand};
 use polars::prelude::DataFrame;
 use shlex::split;
 
-use crate::cx::io;
+use crate::rx::io;
 
 
 /// CLI commands supported by the REPL.
@@ -20,7 +20,7 @@ enum Commands {
     Exit,
 }
 
-/// CX-01 .:. Command Line Interface <CLI>
+/// CONE .:. Read-Eval-Print-Loop 
 #[derive(Parser, Debug)]
 #[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {

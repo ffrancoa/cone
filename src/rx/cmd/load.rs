@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use clap::{Args, ArgGroup};
 use polars::prelude::*;
 
-use crate::cx::io;
+use crate::rx::io;
 
 
 /// Paths of validated targets for the `load` command.

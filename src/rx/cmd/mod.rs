@@ -6,7 +6,7 @@ use clap::{Error, Parser, Subcommand};
 use polars::prelude::DataFrame;
 use shlex::split;
 
-use crate::cx::io;
+use crate::rx::io;
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
@@ -20,7 +20,7 @@ pub enum Commands {
     Exit,
 }
 
-/// CX-01 .:. Command Line Interface <CLI>
+/// CONE .:. Read-Eval-Print-Loop <REPL>
 #[derive(Parser, Debug)]
 #[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {

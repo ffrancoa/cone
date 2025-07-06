@@ -11,13 +11,13 @@ use rustyline::{
     error::ReadlineError,
 };
 
-mod cx;
-use crate::cx::{cmd, io, repl};
+mod rx;
+use crate::rx::{cmd, io, repl};
 
 /// Name of the file where REPL history is stored.
 const HISTORY_FILE: &str = ".cone_history";
 /// Code of the current program.
-const APP_CODE: &str = "CX-01";
+const APP_CODE: &str = "RX-01";
 
 
 /// Build the CLI using `clap`.
@@ -60,7 +60,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 
     // main REPL loop
     loop {
-        match rl.readline("\nCX ❯ ") {
+        match rl.readline("\nRX ❯ ") {
             Ok(buffer) => {
                 let trimmed_line = buffer.trim();
 
