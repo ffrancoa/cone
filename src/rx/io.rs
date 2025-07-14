@@ -22,7 +22,7 @@ fn app_width() -> usize {
 }
 
 /// Applies styling to parts of the input string enclosed
-/// in single quotes, including the quotes.
+/// in single quotes, without including the quotes.
 fn stylize_single_quoted(input: &str) -> Vec<StyledContent<String>> {
     let mut parts = Vec::new();
     let mut buffer = String::new();
@@ -31,23 +31,28 @@ fn stylize_single_quoted(input: &str) -> Vec<StyledContent<String>> {
     for c in input.chars() {
         match c {
             '\'' => {
-                buffer.push('\'');
                 if in_quotes {
+                    // add styled quoted content
                     parts.push(buffer.clone().dark_yellow());
                     buffer.clear();
                     in_quotes = false;
                 } else {
+                    // add previous non-quoted content
                     if !buffer.is_empty() {
                         parts.push(buffer.clone().reset());
                         buffer.clear();
                     }
                     in_quotes = true;
                 }
+
+                // always add the quote itself with default style
+                parts.push("'".to_string().reset());
             }
             _ => buffer.push(c),
         }
     }
 
+    // push any remaining non-quoted text
     if !buffer.is_empty() {
         parts.push(buffer.reset());
     }
