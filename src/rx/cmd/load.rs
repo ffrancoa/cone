@@ -31,7 +31,7 @@ pub struct LoadTargets {
 }
 
 /// Executes the `load` command by validating and importing a file or directory.
-pub fn run(cmd: LoadCmd, _dataset: &mut DataFrame) -> Result<bool, clap::Error> {
+pub fn run(cmd: LoadCmd, _datasets: &mut Vec<DataFrame>) -> Result<bool, clap::Error> {
     let mut targets = LoadTargets {
         files: Vec::new(),
         files_from_dir: Vec::new(),

@@ -55,8 +55,9 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
             .map_err(|_| io::print_error("history file cannot be created"));
     }
 
-    // allocate an empty dataset
-    let mut data = DataFrame::empty();
+    // allocate a collection of datasets
+    let mut datasets: Vec<DataFrame> = Vec::new();
+
 
     // main REPL loop
     loop {
@@ -68,7 +69,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
                     continue
                 }
 
-                if let Ok(false) = cmd::execute(trimmed_line, &mut data) {
+                if let Ok(false) = cmd::execute(trimmed_line, &mut datasets) {
                     break;
                 }
 
