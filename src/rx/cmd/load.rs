@@ -1,18 +1,11 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use clap::{Args, ArgGroup};
+use clap::{ArgGroup, Args};
 use polars::prelude::*;
 
 use crate::rx::io;
 
-
-/// Paths of validated targets for the `load` command.
-#[derive(Debug)]
-pub struct LoadTargets {
-    pub files: Vec<PathBuf>,           // multiple file paths
-    pub files_from_dir: Vec<PathBuf>,  // files from a directory
-}
 /// Arguments for the `load` subcommand.
 #[derive(Args, Debug)]
 #[command(group(
@@ -28,6 +21,13 @@ pub struct LoadCmd {
     /// Path of directory to load.
     #[arg(short, long, value_name = "DIR")]
     dir: Option<PathBuf>,
+}
+
+/// Paths of validated targets for the `load` command.
+#[derive(Debug)]
+pub struct LoadTargets {
+    pub files: Vec<PathBuf>,           // multiple file paths
+    pub files_from_dir: Vec<PathBuf>,  // files from a directory
 }
 
 /// Executes the `load` command by validating and importing a file or directory.
@@ -58,24 +58,25 @@ pub fn run(cmd: LoadCmd, _dataset: &mut DataFrame) -> Result<bool, clap::Error> 
 }
 
 /// Validates the path to a single file and prints errors if it is invalid.
-fn validate_file_path(path: &Path) -> Option<PathBuf>{
+fn validate_file_path(path: &Path) -> Option<PathBuf> {
     if !path.exists() {
         io::print_error(format!("invalid value: '{}'", path.display()));
         io::print_error("file does not exist");
-        return None
+        return None;
     }
 
     if !path.is_file() {
         io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("provided path does not corresponds to a file");
-        return None
+        io::print_error("provided path does not correspond to a file");
+        return None;
     }
 
-    let extension = path.extension()
+    let extension = path
+        .extension()
         .and_then(|e| e.to_str())
         .map(|e| e.to_ascii_lowercase());
 
-    // if the file exists, it must has to have a CSV or XLSX extension
+    // if the file exists, it must have a CSV or XLSX extension
     let valid = matches!(extension.as_deref(), Some("csv") | Some("xlsx"));
 
     if !valid {
@@ -93,13 +94,13 @@ fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
     if !path.exists() {
         io::print_error(format!("invalid value: '{}'", path.display()));
         io::print_error("directory does not exist");
-        return Vec::new()
+        return Vec::new();
     }
 
     if !path.is_dir() {
         io::print_error(format!("invalid value: '{}'", path.display()));
         io::print_error("provided path is not a directory");
-        return Vec::new()
+        return Vec::new();
     }
 
     // search for at least one valid file
@@ -107,7 +108,7 @@ fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
         Ok(entries) => entries,
         Err(_) => {
             io::print_error(format!("cannot read directory: '{}'", path.display()));
-            return Vec::new()
+            return Vec::new();
         }
     };
 
@@ -115,11 +116,12 @@ fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| {
-            path.is_file() &&
-            path.extension()
-                .and_then(|e| e.to_str())
-                .map(|e| matches!(e.to_ascii_lowercase().as_str(), "csv" | "xlsx"))
-                .unwrap_or(false)
+            path.is_file()
+                && path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .map(|e| matches!(e.to_ascii_lowercase().as_str(), "csv" | "xlsx"))
+                    .unwrap_or(false)
         })
         .collect();
 
