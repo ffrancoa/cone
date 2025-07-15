@@ -2,6 +2,8 @@ pub mod load;
 pub mod preview;
 pub mod save;
 
+use std::collections::HashMap;
+
 use clap::{Error, Parser, Subcommand};
 use polars::prelude::DataFrame;
 use shlex::split;
@@ -32,7 +34,7 @@ struct ReplCli {
 /// Parses a line of input and executes the corresponding command.
 ///
 /// Splits the input as shell tokens, parses it into `ReplCli`, and dispatches to handlers.
-pub fn execute(line: &str, datasets: &mut Vec<DataFrame>) -> Result<bool, Error> {
+pub fn execute(line: &str, datasets: &mut HashMap<String, DataFrame>) -> Result<bool, Error> {
     // try splitting input into shell-like tokens
     if let Some(args) = split(line) {
         match ReplCli::try_parse_from(args) {

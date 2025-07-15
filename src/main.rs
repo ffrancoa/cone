@@ -1,4 +1,5 @@
 use std::{error, fs};
+use std::collections::HashMap;
 
 use clap::{
     Command,
@@ -56,7 +57,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     }
 
     // allocate a collection of datasets
-    let mut datasets: Vec<DataFrame> = Vec::new();
+    let mut datasets: HashMap<String, DataFrame> = HashMap::new();
 
 
     // main REPL loop

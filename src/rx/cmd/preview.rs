@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use clap::Args;
 use polars::prelude::*;
 
@@ -9,7 +11,7 @@ pub struct PreviewCmd {
     // pub lines: usize,
 }
 
-pub fn run(_cmd: PreviewCmd, _datasets: &mut Vec<DataFrame>) {
+pub fn run(_cmd: PreviewCmd, _datasets: &mut HashMap<String, DataFrame>) {
     /*
     if dataset.height() == 0 {
         io::print_warn("No data loaded.");
