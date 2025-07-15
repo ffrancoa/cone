@@ -1,11 +1,10 @@
 use std::fs;
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use clap::{ArgGroup, Args};
-use polars::prelude::*;
 
 use crate::rx::io;
+use crate::rx::Datasets;
 
 /// Arguments for the `load` subcommand.
 #[derive(Args, Debug)]
@@ -32,7 +31,7 @@ pub struct LoadTargets {
 }
 
 /// Executes the `load` command by validating and importing a file or directory.
-pub fn run(cmd: LoadCmd, _datasets: &mut HashMap<String, DataFrame>) -> Result<bool, clap::Error> {
+pub fn run(cmd: LoadCmd, _datasets: &mut Datasets) -> Result<bool, clap::Error> {
     let mut targets = LoadTargets {
         files: Vec::new(),
         files_from_dir: Vec::new(),

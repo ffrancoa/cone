@@ -1,9 +1,7 @@
-use std::collections::HashMap;
-
 use clap::Args;
-use polars::prelude::*;
 
 //use crate::rx::io;
+use crate::rx::Datasets;
 
 #[derive(Args, Debug)]
 pub struct PreviewCmd {
@@ -11,7 +9,7 @@ pub struct PreviewCmd {
     // pub lines: usize,
 }
 
-pub fn run(_cmd: PreviewCmd, _datasets: &mut HashMap<String, DataFrame>) {
+pub fn run(_cmd: PreviewCmd, _datasets: &mut Datasets) {
     /*
     if dataset.height() == 0 {
         io::print_warn("No data loaded.");

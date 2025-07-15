@@ -1,9 +1,7 @@
-use std::collections::HashMap;
-
 use clap::Args;
-use polars::prelude::*;
 
 //use crate::rx::io;
+use crate::rx::Datasets;
 
 #[derive(Args, Debug)]
 pub struct SaveCmd {
@@ -14,7 +12,7 @@ pub struct SaveCmd {
     pub ignore_case: bool,
 }
 
-pub fn run(_cmd: SaveCmd, _datasets: &mut HashMap<String, DataFrame>) {
+pub fn run(_cmd: SaveCmd, _datasets: &mut Datasets) {
     // implement logic to save the current dataset
     todo!();
 }
