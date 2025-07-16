@@ -40,21 +40,21 @@ pub fn run(cmd: LoadCmd, _datasets: &mut Datasets) -> Result<bool, clap::Error> 
 
     // validate and collect valid files from `-f`
     for path in &cmd.files {
-        if let Some(valid_path) = validate_file_path(path) {
-            let df = DataFrame::empty(); // TODO: real file reading
+        if let Some(file_path) = validate_file_path(path) {
+            let _df = DataFrame::empty(); // TODO: real file reading
 
-            targets.files.push(valid_path);
+            targets.files.push(file_path);
         }
-        // TODO: load into `dataset` using Polars
+        todo!("load file(s)")
     }
 
     // validate and collect valid files from `-d`
-    if let Some(path) = &cmd.dir {
-        let files_paths = validate_dir_path(path);
+    if let Some(dir_path) = &cmd.dir {
+        let files_paths = validate_dir_path(dir_path);
         if !files_paths.is_empty() {
             targets.files_from_dir = files_paths;
         }
-        // TODO: load multiple files from directory
+        todo!("load files from directory")
     }
 
     Ok(true)
@@ -98,79 +98,84 @@ fn ask_dataset_name(path: &Path, datasets: &Datasets) -> String {
 /// Validates the path to a single file and prints errors if it is invalid.
 fn validate_file_path(path: &Path) -> Option<PathBuf> {
     if !path.exists() {
-        io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("file does not exist");
+        io::print_error(format!("'{}' does not exist.", path.display()));
         return None;
     }
 
     if !path.is_file() {
-        io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("provided path does not correspond to a file");
+        io::print_error(format!("'{}' is not a file.", path.display()));
         return None;
     }
 
-    let extension = path
+    let ext = path
         .extension()
         .and_then(|e| e.to_str())
-        .map(|e| e.to_ascii_lowercase());
+        .map(str::to_ascii_lowercase);
 
-    // if the file exists, it must have a CSV or XLSX extension
-    let valid = matches!(extension.as_deref(), Some("csv") | Some("xlsx"));
-
-    if !valid {
-        io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("provided file does not have a valid extension");
-        None
-    } else {
-        io::print_info(format!("loading file: {}", path.display()));
-        Some(path.to_path_buf())
+    match ext.as_deref() {
+        Some("csv") | Some("xlsx") => {
+            io::print_info(format!("Valid file: {}", path.display()));
+            Some(path.to_path_buf())
+        }
+        _ => {
+            io::print_error(format!(
+                "'{}' has an unsupported file extension (.csv or .xlsx expected).",
+                path.display()
+            ));
+            None
+        }
     }
 }
 
 /// Validates a directory path and checks for CSV or XLSX files.
 fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
     if !path.exists() {
-        io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("directory does not exist");
+        io::print_error(format!("'{}' does not exist.", path.display()));
         return Vec::new();
     }
 
     if !path.is_dir() {
-        io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("provided path is not a directory");
+        io::print_error(format!("'{}' is not a directory.", path.display()));
         return Vec::new();
     }
 
     // search for at least one valid file
     let entries = match fs::read_dir(path) {
         Ok(entries) => entries,
-        Err(_) => {
-            io::print_error(format!("cannot read directory: '{}'", path.display()));
+        Err(err) => {
+            io::print_error(format!("failed to read '{}': {}", path.display(), err));
             return Vec::new();
         }
     };
 
-    let valid_files: Vec<PathBuf> = entries
+    let valid_files: Vec<_> = entries
         .filter_map(Result::ok)
         .map(|entry| entry.path())
-        .filter(|path| {
-            path.is_file()
-                && path
-                    .extension()
-                    .and_then(|e| e.to_str())
-                    .map(|e| matches!(e.to_ascii_lowercase().as_str(), "csv" | "xlsx"))
-                    .unwrap_or(false)
+        .filter(|p| {
+            if !p.is_file() {
+                return false;
+            }
+
+            match p.extension().and_then(|e| e.to_str()) {
+                Some(ext) => {
+                    let ext = ext.to_ascii_lowercase();
+                    ext == "csv" || ext == "xlsx"
+                }
+                None => false,
+            }
         })
         .collect();
 
     if valid_files.is_empty() {
-        io::print_error(format!("invalid value: '{}'", path.display()));
-        io::print_error("directory does not contain any valid .csv or .xlsx files");
+        io::print_error(format!(
+            "'{}' does not contain any valid .csv or .xlsx files.",
+            path.display()
+        ));
     } else {
         io::print_info(format!(
-            "loading directory: '{}' ({} file(s) found)",
-            path.display(),
-            valid_files.len()
+            "{} valid file(s) found in '{}'.",
+            valid_files.len(),
+            path.display()
         ));
     }
 

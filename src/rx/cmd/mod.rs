@@ -24,7 +24,6 @@ pub enum Commands {
 #[derive(Parser, Debug)]
 #[command(multicall = true, disable_help_flag = true)]
 struct ReplCli {
-    /// The entered subcommand.
     #[command(subcommand)]
     command: Commands,
 }

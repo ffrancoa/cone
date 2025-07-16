@@ -36,39 +36,35 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
     .map(|s| s.to_string())
     .collect::<Vec<_>>();
 
-    // initialize line editor with helper
     let helper = repl::ReadLineHelper::new(commands);
     let mut rl = Editor::new()?;
     rl.set_helper(Some(helper));
 
-    // print header at REPL start
     io::header(APP_CODE);
 
-    // attempt to load REPL history
     if rl.load_history(HISTORY_FILE).is_err() {
         println!();
-        io::print_warn(format!("no '{HISTORY_FILE}' file in current directory"));
+        io::print_warn(format!("no '{HISTORY_FILE}' file found"));
         let _ = fs::File::create(HISTORY_FILE)
             .map(|_| io::print_info("history file created"))
-            .map_err(|_| io::print_error("history file cannot be created"));
+            .map_err(|_| io::print_error("failed to create history file"));
     }
 
     // initialize in-memory dataset collection
     let mut datasets = Datasets::new();
 
-    // main REPL loop
     loop {
-        match rl.readline(format!("\nRX {} ", io::PROMPT).as_str()) {
-            Ok(buffer) => {
-                let trimmed = buffer.trim();
+        match rl.readline(&format!("\nRX {} ", io::PROMPT)) {
+            Ok(line) => {
+                let trimmed = line.trim();
                 if trimmed.is_empty() {
                     continue;
                 }
 
                 match cmd::execute(trimmed, &mut datasets) {
+                    Ok(true) => {}
                     Ok(false) => break,
-                    Ok(true) => {},
-                    Err(err) => io::print_error(format!("Command error: {err}")),
+                    Err(err) => io::print_error(format!("command error: {err}")),
                 }
 
                 rl.add_history_entry(trimmed)?;
@@ -97,7 +93,7 @@ fn main() {
     let _matches = build_cli().get_matches();
 
     if let Err(err) = run_app() {
-        io::print_error(format!("Application error: {err}"));
+        io::print_error(format!("fatal error: {err}"));
         std::process::exit(1);
     }
 }
