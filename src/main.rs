@@ -58,7 +58,7 @@ fn run_app() -> Result<(), Box<dyn error::Error>> {
 
     // main REPL loop
     loop {
-        match rl.readline("\nRX ❯ ") {
+        match rl.readline(format!("\nRX {} ", io::PROMPT).as_str()) {
             Ok(buffer) => {
                 let trimmed = buffer.trim();
                 if trimmed.is_empty() {

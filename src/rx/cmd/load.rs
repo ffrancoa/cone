@@ -2,6 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use clap::{ArgGroup, Args};
+use polars::prelude::DataFrame;
 
 use crate::rx::io;
 use crate::rx::Datasets;
@@ -40,6 +41,8 @@ pub fn run(cmd: LoadCmd, _datasets: &mut Datasets) -> Result<bool, clap::Error> 
     // validate and collect valid files from `-f`
     for path in &cmd.files {
         if let Some(valid_path) = validate_file_path(path) {
+            let df = DataFrame::empty(); // TODO: real file reading
+
             targets.files.push(valid_path);
         }
         // TODO: load into `dataset` using Polars
@@ -55,6 +58,41 @@ pub fn run(cmd: LoadCmd, _datasets: &mut Datasets) -> Result<bool, clap::Error> 
     }
 
     Ok(true)
+}
+
+/// Prompts the user to assign a name to the dataset.
+/// 
+/// Returns the user input or a default name if input is empty.
+fn ask_dataset_name(path: &Path, datasets: &Datasets) -> String {
+    let default_name = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("dataset")
+        .to_string();
+
+    loop {
+        io::input_prompt("Enter the name");
+
+        let mut input = String::new();
+        if let Err(_) = io::stdin().read_line(&mut input) {
+            println!("⚠ Failed to read input. Try again.");
+            continue;
+        }
+
+        let name = input.trim();
+        let final_name = if name.is_empty() {
+            default_name.clone()
+        } else {
+            name.to_string()
+        };
+
+        if datasets.contains_key(&final_name) {
+            println!("⚠ Name '{}' already exists. Choose a different name.", final_name);
+            continue;
+        }
+
+        return final_name;
+    }
 }
 
 /// Validates the path to a single file and prints errors if it is invalid.

@@ -1,3 +1,4 @@
+use std::io::{self, Write};
 use std::fmt::Display;
 
 use clap::{crate_description, crate_name};
@@ -13,6 +14,8 @@ use tabled::{
 
 /// Maximum width for app rendering.
 const APP_WIDTH_LIMIT: usize = 80;
+
+pub const PROMPT: &str = "❯";
 
 /// Determines the width to use for the header, limited by APP_WIDTH_LIMIT.
 fn app_width() -> usize {
@@ -103,6 +106,13 @@ pub fn header(app_code: &str) {
     table.with(Width::increase(app_width()));
 
     println!("\n{}", table.to_string().bold().blue());
+}
+
+pub fn input_prompt(msg: impl Display) {
+    print!("  {} {} {}", PROMPT.bold().blue(), msg, PROMPT.bold().blue());
+    io::stdout().flush().unwrap();
+
+    let mut input = String::new();
 }
 
 /// Prints a successful-operation message to stdout,
