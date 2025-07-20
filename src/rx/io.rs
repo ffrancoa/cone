@@ -108,11 +108,14 @@ pub fn header(app_code: &str) {
     println!("\n{}", table.to_string().bold().blue());
 }
 
-pub fn input_prompt(msg: impl Display) {
-    print!("  {} {} {}", PROMPT.bold().blue(), msg, PROMPT.bold().blue());
-    io::stdout().flush().unwrap();
+pub fn _input_prompt(msg: &str) -> Result<String, io::Error> {
+    print!("{} {} {}{} ", "IN".bold().yellow(), PROMPT.bold().yellow(), msg.yellow(), ":".bold().yellow());
+    io::stdout().flush()?;
 
     let mut input = String::new();
+
+    std::io::stdin().read_line(&mut input)?;
+    Ok(input)
 }
 
 /// Prints a successful-operation message to stdout,

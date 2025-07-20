@@ -24,60 +24,54 @@ pub struct LoadCmd {
     dir: Option<PathBuf>,
 }
 
-/// Paths of validated targets for the `load` command.
-#[derive(Debug)]
-pub struct LoadTargets {
-    pub files: Vec<PathBuf>,           // multiple file paths
-    pub files_from_dir: Vec<PathBuf>,  // files from a directory
-}
-
 /// Executes the `load` command by validating and importing a file or directory.
-pub fn run(cmd: LoadCmd, _datasets: &mut Datasets) -> Result<bool, clap::Error> {
-    let mut targets = LoadTargets {
-        files: Vec::new(),
-        files_from_dir: Vec::new(),
-    };
+pub fn run(cmd: LoadCmd, datasets: &mut Datasets) -> Result<bool, clap::Error> {
+    let mut loaded_files = Vec::new();
 
     // validate and collect valid files from `-f`
     for path in &cmd.files {
-        if let Some(file_path) = validate_file_path(path) {
-            let _df = DataFrame::empty(); // TODO: real file reading
-
-            targets.files.push(file_path);
+        if let Some((name, file_path)) = validate_file_path(path, datasets) {
+            let df = DataFrame::empty(); // TODO: real file reading
+            datasets.insert(name.clone(), df);
+            loaded_files.push((name, file_path));
         }
-        todo!("load file(s)")
     }
 
     // validate and collect valid files from `-d`
     if let Some(dir_path) = &cmd.dir {
         let files_paths = validate_dir_path(dir_path);
         if !files_paths.is_empty() {
-            targets.files_from_dir = files_paths;
         }
-        todo!("load files from directory")
+        // TODO: "load files from directory"
+    }
+
+    if !loaded_files.is_empty() {
+        for (name, path) in loaded_files {
+            io::print_info(format!(
+                "{} ← '{}' successfully loaded", name, path.display()
+            ));
+        }
+    } else {
+        io::print_error("no valid files were loaded");
     }
 
     Ok(true)
 }
 
-/// Prompts the user to assign a name to the dataset.
-/// 
-/// Returns the user input or a default name if input is empty.
+/*
 fn ask_dataset_name(path: &Path, datasets: &Datasets) -> String {
     let default_name = path
         .file_stem()
         .and_then(|s| s.to_str())
-        .unwrap_or("dataset")
+        .unwrap()
         .to_string();
 
     loop {
-        io::input_prompt("Enter the name");
-
-        let mut input = String::new();
-        if let Err(_) = io::stdin().read_line(&mut input) {
-            println!("⚠ Failed to read input. Try again.");
+        let Ok(input) = io::input_prompt("dataset name") else {
+            io::print_error("failed to read input");
+            io::print_error("please, try again");
             continue;
-        }
+        };
 
         let name = input.trim();
         let final_name = if name.is_empty() {
@@ -87,23 +81,24 @@ fn ask_dataset_name(path: &Path, datasets: &Datasets) -> String {
         };
 
         if datasets.contains_key(&final_name) {
-            println!("⚠ Name '{}' already exists. Choose a different name.", final_name);
+            io::print_error(format!("name '{final_name}' already exists"));
+            io::print_error("please, choose a different one");
             continue;
         }
 
-        return final_name;
+        return final_name
     }
-}
+}*/
 
 /// Validates the path to a single file and prints errors if it is invalid.
-fn validate_file_path(path: &Path) -> Option<PathBuf> {
+fn validate_file_path(path: &Path, datasets: &Datasets) -> Option<(String, PathBuf)> {
     if !path.exists() {
-        io::print_error(format!("'{}' does not exist.", path.display()));
+        io::print_error(format!("'{}' does not exist", path.display()));
         return None;
     }
 
     if !path.is_file() {
-        io::print_error(format!("'{}' is not a file.", path.display()));
+        io::print_error(format!("'{}' is not a file", path.display()));
         return None;
     }
 
@@ -114,12 +109,32 @@ fn validate_file_path(path: &Path) -> Option<PathBuf> {
 
     match ext.as_deref() {
         Some("csv") | Some("xlsx") => {
-            io::print_info(format!("Valid file: {}", path.display()));
-            Some(path.to_path_buf())
+            // deduce name
+            let name = match path.file_stem().and_then(|s| s.to_str()) {
+                Some(s) => s.to_ascii_uppercase(),
+                None => {
+                    io::print_error(format!(
+                        "could not extract a valid name from '{}'",
+                        path.display()
+                    ));
+                    return None;
+                }
+            };
+
+            if datasets.contains_key(&name) {
+                io::print_error(format!(
+                    "dataset \"{}\" (from '{}') already exists",
+                    name,
+                    path.display()
+                ));
+                return None;
+            }
+
+            Some((name, path.to_path_buf()))
         }
         _ => {
             io::print_error(format!(
-                "'{}' has an unsupported file extension (.csv or .xlsx expected).",
+                "file '{}' has an unsupported file extension",
                 path.display()
             ));
             None
@@ -130,12 +145,12 @@ fn validate_file_path(path: &Path) -> Option<PathBuf> {
 /// Validates a directory path and checks for CSV or XLSX files.
 fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
     if !path.exists() {
-        io::print_error(format!("'{}' does not exist.", path.display()));
+        io::print_error(format!("'{}' does not exist", path.display()));
         return Vec::new();
     }
 
     if !path.is_dir() {
-        io::print_error(format!("'{}' is not a directory.", path.display()));
+        io::print_error(format!("'{}' is not a directory", path.display()));
         return Vec::new();
     }
 
@@ -168,12 +183,12 @@ fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
 
     if valid_files.is_empty() {
         io::print_error(format!(
-            "'{}' does not contain any valid .csv or .xlsx files.",
+            "'{}' does not contain any valid .csv or .xlsx files",
             path.display()
         ));
     } else {
         io::print_info(format!(
-            "{} valid file(s) found in '{}'.",
+            "{} valid file(s) found in '{}'",
             valid_files.len(),
             path.display()
         ));
