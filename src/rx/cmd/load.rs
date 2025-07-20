@@ -102,7 +102,7 @@ fn ask_dataset_name(path: &Path, datasets: &Datasets) -> String {
 /// Validates the path to a single file and prints errors if it is invalid.
 fn validate_file_path(path: &Path, datasets: &Datasets) -> Option<(String, PathBuf)> {
     if !path.exists() {
-        io::print_error(format!("'{}' does not exist", path.display()));
+        io::print_error(format!("'file {}' does not exist", path.display()));
         return None;
     }
 
@@ -154,7 +154,7 @@ fn validate_file_path(path: &Path, datasets: &Datasets) -> Option<(String, PathB
 /// Validates a directory path and checks for CSV or XLSX files.
 fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
     if !path.exists() {
-        io::print_error(format!("'{}' does not exist", path.display()));
+        io::print_error(format!("directory '{}' does not exist", path.display()));
         return Vec::new();
     }
 
