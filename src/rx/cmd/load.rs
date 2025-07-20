@@ -1,8 +1,9 @@
 use std::fs;
+use std::error::Error;
 use std::path::{Path, PathBuf};
 
 use clap::{ArgGroup, Args};
-use polars::prelude::DataFrame;
+use polars::prelude::*;
 
 use crate::rx::io;
 use crate::rx::Datasets;
@@ -31,9 +32,17 @@ pub fn run(cmd: LoadCmd, datasets: &mut Datasets) -> Result<bool, clap::Error> {
     // validate and collect valid files from `-f`
     for path in &cmd.files {
         if let Some((name, file_path)) = validate_file_path(path, datasets) {
-            let df = DataFrame::empty(); // TODO: real file reading
-            datasets.insert(name.clone(), df);
-            loaded_files.push((name, file_path));
+            match read_csv(&file_path) {
+                Ok(df) => {
+                    datasets.insert(name.clone(), df);
+                    loaded_files.push((name, file_path));
+                }
+                Err(_) => {
+                    io::print_error(format!(
+                        "failed to load file '{}'", file_path.display(),
+                    ));
+                }
+            }
         }
     }
 
@@ -195,4 +204,23 @@ fn validate_dir_path(path: &PathBuf) -> Vec<PathBuf> {
     }
 
     valid_files
+}
+
+fn read_csv(file_path: &Path) -> Result<DataFrame, Box<dyn Error>> {
+    let mut lazy_frame = LazyCsvReader::new(file_path)
+        .with_infer_schema_length(Some(0))
+        .finish()?;
+    
+    let schema = lazy_frame.collect_schema()?;
+
+    let raw_df = lazy_frame
+        .select(schema.iter_names().map(|name| {
+            let sname = name.as_str();
+            col(sname).cast(DataType::Float64).alias(sname)
+            })
+            .collect::<Vec<_>>()
+        )
+        .collect()?;
+
+    Ok(raw_df)
 }
