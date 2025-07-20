@@ -132,7 +132,7 @@ fn validate_file_path(path: &Path, datasets: &Datasets) -> Option<(String, PathB
 
             if datasets.contains_key(&name) {
                 io::print_error(format!(
-                    "dataset \"{}\" (from '{}') already exists",
+                    "\"{}\" (from '{}') already exists in memory",
                     name,
                     path.display()
                 ));
