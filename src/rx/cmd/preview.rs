@@ -1,21 +1,25 @@
 use clap::Args;
 
-//use crate::rx::io;
+use crate::rx::io;
 use crate::rx::Datasets;
 
 #[derive(Args, Debug)]
 pub struct PreviewCmd {
-    // #[arg(short, long, default_value = "10")]
-    // pub lines: usize,
+    /// Number of rows to be shown.
+    #[arg(
+        short, long, value_name = "ROWS",
+        default_value_t = 6,  allow_hyphen_values = true
+    )]
+    rows: isize,
 }
 
-pub fn run(_cmd: PreviewCmd, _datasets: &mut Datasets) {
-    /*
-    if dataset.height() == 0 {
-        io::print_warn("No data loaded.");
-    } else {
-        io::print_info("Previewing dataset...");
-        println!("{:?}", dataset.head(Some(5))); // example
+pub fn run(cmd: PreviewCmd, datasets: &mut Datasets) {
+    if datasets.is_empty() {
+        io::print_error("no datasets have been loaded");
+        return
     }
-    */
+
+    for (df_name, df) in datasets.iter() {
+        io::print_table(df, df_name, cmd.rows);
+    }
 }
