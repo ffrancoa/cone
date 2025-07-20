@@ -43,7 +43,7 @@ pub fn execute(line: &str, datasets: &mut Datasets) -> Result<bool, Error> {
                         return Ok(false)
                     },
                     Commands::Load(cmd) => return load::run(cmd, datasets),
-                    Commands::Preview(cmd) => preview::run(cmd, datasets),
+                    Commands::Preview(cmd) => return preview::run(cmd, datasets),
                     Commands::Save(cmd) => save::run(cmd, datasets),
                 }
             },
