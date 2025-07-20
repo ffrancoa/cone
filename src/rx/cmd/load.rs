@@ -46,6 +46,8 @@ pub fn run(cmd: LoadCmd, datasets: &mut Datasets) -> Result<bool, clap::Error> {
         }
     }
 
+    //TODO: IMPROVE AUTOCOMPLETEEEE to load many files using -f
+
     // validate and collect valid files from `-d`
     if let Some(dir_path) = &cmd.dir {
         let files_paths = validate_dir_path(dir_path);
